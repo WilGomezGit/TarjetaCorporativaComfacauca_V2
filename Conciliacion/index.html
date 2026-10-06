@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conciliación de terceros | Módulo de Tarjetas</title>
+<link rel="apple-touch-icon" sizes="180x180" href="../imagen/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../imagen/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../imagen/favicon-16x16.png">
+<link rel="manifest" href="../imagen/site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../css/app.css">
+</head>
+<body>
+<div class="app">
+<aside class="sidebar" aria-label="Navegación principal">
+  <a class="sidebar__brand" href="../index.html"><img src="../imagen/Logo.png" alt="Comfacauca"><div><b>Módulo de Tarjetas</b><span>Tesorería Comfacauca</span></div></a>
+  <a class="sidebar__link" href="../index.html"><i class="fa-solid fa-house"></i>Inicio</a>
+  <div class="sidebar__group">Procesar</div>
+  <a class="sidebar__link" href="../Consumos/procesar_consumos.html"><i class="fa-solid fa-file-lines"></i>Consumos</a>
+  <a class="sidebar__link" href="../Fibatch/procesar_fibatch.html"><i class="fa-solid fa-right-left"></i>FIBATCH</a>
+  <a class="sidebar__link" href="../SaldosPagina/SaldosPagina.html"><i class="fa-solid fa-chart-line"></i>Saldos página</a>
+  <div class="sidebar__group">Validar</div>
+  <a class="sidebar__link" href="../ValidarArchivosPersonalizacion/validarPersonalizacion.html"><i class="fa-solid fa-list-check"></i>Personalización</a>
+  <a class="sidebar__link" href="../ValidarArchivoPago/validarArchivoPago.html"><i class="fa-solid fa-money-check-dollar"></i>Pago subsidio familiar</a>
+  <div class="sidebar__group">Conciliar</div>
+  <a class="sidebar__link is-active" aria-current="page" href="../Conciliacion/index.html"><i class="fa-solid fa-scale-balanced"></i>Conciliación de terceros</a>
+  <div class="sidebar__foot">Creado por Wilmar Andrés Gómez</div>
+</aside>
+<div class="main">
+  <header class="topbar"><nav class="breadcrumb"><a href="../index.html">Tarjetas</a> / Conciliar / <b>Conciliación de terceros</b></nav><div class="topbar__user">Tesorería <span class="avatar">WG</span></div></header>
+  <main class="content">
+    <div class="page-head">
+      <div><h1>Conciliación de saldos de terceros</h1><p>Procesa los archivos de Contabilidad, Tesorería y (opcional) Consumos para identificar diferencias.</p></div>
+      <div class="page-head__actions">
+        <button id="btnProcesar" class="btn btn--primary"><i class="fa-solid fa-play"></i>Realizar conciliación</button>
+        <button id="btnReiniciar" class="btn btn--danger"><i class="fa-solid fa-eraser"></i>Limpiar</button>
+        <button id="btnDescargar" class="btn btn--secondary" hidden><i class="fa-solid fa-download"></i>Descargar reporte</button>
+      </div>
+    </div>
+
+    <div class="upload-grid">
+        <article class="card upload-card" id="card-contabilidad">
+          <div class="card-header"><h2>1. Archivo de Contabilidad</h2></div>
+          <label id="dropZone-contabilidad" class="dropzone" for="inputContabilidad">
+            <div class="dropzone__icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+            <p class="drop-title dropzone__title">Arrastra el archivo aquí o haz clic</p>
+            <p class="drop-subtitle dropzone__hint">Formatos: .xlsx, .xls, .csv</p>
+          </label>
+          <input type="file" id="inputContabilidad" accept=".xlsx,.xls,.csv" class="file-input" style="display: none;">
+          <p id="estado-contabilidad" class="file-status">Sin cargar</p>
+        </article>
+        <article class="card upload-card" id="card-tesoreria">
+          <div class="card-header"><h2>2. Archivo de Tesorería</h2></div>
+          <label id="dropZone-tesoreria" class="dropzone" for="inputTesoreria">
+            <div class="dropzone__icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+            <p class="drop-title dropzone__title">Arrastra el archivo aquí o haz clic</p>
+            <p class="drop-subtitle dropzone__hint">Formatos: .xlsx, .xls, .csv</p>
+          </label>
+          <input type="file" id="inputTesoreria" accept=".xlsx,.xls,.csv" class="file-input" style="display: none;">
+          <p id="estado-tesoreria" class="file-status">Sin cargar</p>
+        </article>
+        <article class="card upload-card" id="card-consumos">
+          <div class="card-header"><h2>3. Archivo de Consumos (opcional)</h2></div>
+          <label id="dropZone-consumos" class="dropzone" for="inputConsumos">
+            <div class="dropzone__icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+            <p class="drop-title dropzone__title">Arrastra el archivo aquí o haz clic</p>
+            <p class="drop-subtitle dropzone__hint">Formatos: .xlsx, .xls, .csv</p>
+          </label>
+          <input type="file" id="inputConsumos" accept=".xlsx,.xls,.csv" class="file-input" style="display: none;">
+          <p id="estado-consumos" class="file-status">Sin cargar (opcional)</p>
+        </article>
+    </div>
+
+    <section id="resumenSection" class="card section-card" hidden>
+      <h2>Resumen de resultados</h2>
+      <div class="summary-grid">
+        <div class="summary-item"><span>Contabilidad</span><strong id="resumenTercerosCont">0</strong></div>
+        <div class="summary-item"><span>Tesorería</span><strong id="resumenTercerosTes">0</strong></div>
+        <div class="summary-item"><span>Conciliados</span><strong id="resumenConciliados">0</strong></div>
+        <div class="summary-item"><span>Diferencias</span><strong id="resumenDiferencias">0</strong></div>
+        <div class="summary-item"><span>Consumos procesados</span><strong id="resumenConsumos">0</strong></div>
+        <div class="summary-item"><span>Valor consumos</span><strong id="resumenValorConsumos">$0</strong></div>
+        <div class="summary-item"><span>Inconsistencias</span><strong id="resumenInconsistencias">0</strong></div>
+      </div>
+    </section>
+
+    <section id="inconsistenciasSection" class="card section-card" hidden>
+      <h2>Inconsistencias y alertas</h2>
+      <div class="table-responsive">
+        <table class="table table-sm" id="tablaInconsistencias">
+          <thead><tr><th>Tipo</th><th>Documento</th><th>Tarjeta</th><th>Detalle</th></tr></thead>
+          <tbody id="tablaInconsistenciasBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="resultadosSection" class="card section-card" hidden>
+      <div class="section-header"><h2>Tabla de resultados</h2></div>
+      <div class="filters">
+        <input type="text" id="buscarDocumento" placeholder="Buscar documento">
+        <input type="text" id="buscarNombre" placeholder="Buscar nombre">
+        <input type="text" id="buscarTarjeta" placeholder="Buscar tarjeta">
+      </div>
+      <div class="table-responsive">
+        <table id="tablaResultados" class="table">
+          <thead>
+            <tr>
+              <th data-sort="documento">Documento</th>
+              <th data-sort="nombre">Apellidos y nombres</th>
+              <th data-sort="tarjeta">No. tarjeta</th>
+              <th data-sort="saldoContabilidad" class="text-end">Saldo contabilidad</th>
+              <th data-sort="consumos" class="text-end">Consumos</th>
+              <th data-sort="saldoAjustado" class="text-end">Saldo con ajuste</th>
+              <th data-sort="saldoTesoreria" class="text-end">Saldo tesorería</th>
+              <th data-sort="diferencia" class="text-end">Diferencia</th>
+              <th data-sort="estado">Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tablaResultadosBody"></tbody>
+        </table>
+      </div>
+      <p class="table-count" id="resultadosCount"></p>
+    </section>
+  </main>
+  <footer class="footer"><span>© Tesorería Comfacauca · Popayán, Cauca</span><span>Módulo de Tarjetas v2.0</span></footer>
+</div>
+</div>
+<div id="overlayProcesando" class="overlay" hidden>
+  <div class="overlay__box overlay-content"><div class="spinner"></div><p>Trabajando, por favor espera…</p></div>
+</div>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/excel.js"></script>
+<script src="js/conciliacion.js"></script>
+<script src="js/app.js"></script>
+<script>
+        const zonas = [
+            { drop: 'dropZone-contabilidad', input: 'inputContabilidad' },
+            { drop: 'dropZone-tesoreria', input: 'inputTesoreria' },
+            { drop: 'dropZone-consumos', input: 'inputConsumos' }
+        ];
+
+        zonas.forEach(z => {
+            const dropZone = document.getElementById(z.drop);
+            const input = document.getElementById(z.input);
+
+            ['dragenter', 'dragover'].forEach(ev => {
+                dropZone.addEventListener(ev, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropZone.classList.add('dragover');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(ev => {
+                dropZone.addEventListener(ev, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropZone.classList.remove('dragover');
+                });
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                const file = e.dataTransfer.files[0];
+                if (file) {
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    input.files = dataTransfer.files;
+                    input.dispatchEvent(new Event('change'));
+                    dropZone.classList.add('file-loaded');
+                    dropZone.querySelector('.drop-title').innerHTML = `<i class="fas fa-check-circle"></i> ${file.name}`;
+                    setTimeout(() => dropZone.classList.remove('file-loaded'), 1000);
+                }
+            });
+        });
+
+        function scrollToBottom() { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }
+        function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    </script>
+<script src="../css/dropzone.js"></script>
+<script src="../css/layout.js"></script>
+</body>
+</html>

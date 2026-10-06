@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Procesar consumos | Módulo de Tarjetas</title>
+<link rel="icon" type="image/png" sizes="32x32" href="../imagen/favicon-32x32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../css/propuesta.css">
+</head>
+<body>
+<div class="app">
+<aside class="sidebar" aria-label="Navegación principal">
+  <a class="sidebar__brand" href="../index.html"><img src="../imagen/Logo.png" alt="Comfacauca"><div><b>Módulo de Tarjetas</b><span>Tesorería Comfacauca</span></div></a>
+  <a class="sidebar__link" href="../index.html"><i class="fa-solid fa-house"></i>Inicio</a>
+  <div class="sidebar__group">Procesar</div>
+  <a class="sidebar__link is-active" aria-current="page" href="../Consumos/procesar_consumos.html"><i class="fa-solid fa-file-lines"></i>Consumos</a>
+  <a class="sidebar__link" href="../Fibatch/procesar_fibatch.html"><i class="fa-solid fa-right-left"></i>FIBATCH</a>
+  <a class="sidebar__link" href="../SaldosPagina/SaldosPagina.html"><i class="fa-solid fa-chart-line"></i>Saldos página</a>
+  <div class="sidebar__group">Validar</div>
+  <a class="sidebar__link" href="../ValidarArchivosPersonalizacion/validarPersonalizacion.html"><i class="fa-solid fa-list-check"></i>Personalización</a>
+  <a class="sidebar__link" href="../ValidarArchivoPago/validarArchivoPago.html"><i class="fa-solid fa-money-check-dollar"></i>Pago subsidio familiar</a>
+  <div class="sidebar__group">Conciliar</div>
+  <a class="sidebar__link" href="../Conciliacion/index.html"><i class="fa-solid fa-scale-balanced"></i>Conciliación de terceros</a>
+  <div class="sidebar__foot">Popayán, Cauca · Creado por Wilmar Andrés Gómez</div>
+</aside>
+<div class="main">
+  <header class="topbar"><nav class="breadcrumb"><a href="../index.html">Tarjetas</a> / Procesar / <b>Consumos</b></nav><div class="topbar__user">Tesorería <span class="avatar">WG</span></div></header>
+  <main class="content">
+    <div class="page-head">
+      <div><h1>Procesar archivo de consumos</h1><p>Carga el .txt del banco; se identifica cada establecimiento y se totaliza el archivo.</p></div>
+      <div class="page-head__actions">
+        <button class="btn btn--danger-ghost" id="btnLimpiar"><i class="fa-solid fa-eraser"></i>Limpiar</button>
+        <button class="btn btn--secondary"><i class="fa-solid fa-file-csv"></i>Exportar CSV</button>
+        <button class="btn btn--secondary"><i class="fa-solid fa-file-excel"></i>Exportar Excel</button>
+        <button class="btn btn--primary" id="btnProcesar"><i class="fa-solid fa-play"></i>Procesar</button>
+      </div>
+    </div>
+
+    <div class="steps" id="steps">
+      <div class="step is-done"><span class="step__dot"><i class="fa-solid fa-check"></i></span>Cargar archivo<span class="step__line"></span></div>
+      <div class="step is-current"><span class="step__dot">2</span>Revisar<span class="step__line"></span></div>
+      <div class="step"><span class="step__dot">3</span>Exportar</div>
+    </div>
+
+    <!-- Estado vacío: se muestra cuando no hay archivo -->
+    <div class="dropzone" id="dropZone" hidden tabindex="0" role="button" aria-label="Cargar archivo de consumos">
+      <div class="dropzone__icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+      <p class="dropzone__title">Arrastra el archivo aquí o haz clic para seleccionarlo</p>
+      <p class="dropzone__hint">Formatos soportados: .txt</p>
+      <input type="file" id="fileInput" accept=".txt,.csv" hidden>
+    </div>
+
+    <!-- Archivo cargado -->
+    <div class="card file-chip" id="fileChip">
+      <span class="file-chip__icon"><i class="fa-solid fa-file-lines"></i></span>
+      <div><b>CONSUMOS_20240306.txt</b><small>248 KB · 1.248 líneas · cargado hace 2 min</small></div>
+      <button class="btn btn--secondary btn--sm file-chip__remove" id="btnQuitar"><i class="fa-solid fa-xmark"></i>Quitar archivo</button>
+    </div>
+
+    <div id="resultados">
+      <div class="kpis">
+        <div class="card kpi"><span class="kpi__label">Registros</span><strong class="kpi__value">1.248</strong><span class="kpi__note">6 establecimientos sin código</span></div>
+        <div class="card kpi"><span class="kpi__label">Total archivo</span><strong class="kpi__value">$ 12.480.300</strong><span class="kpi__note">Suma de consumos</span></div>
+        <div class="card kpi"><span class="kpi__label">Total cargas</span><strong class="kpi__value">$ 3.250.000</strong><span class="kpi__note">Recargas del periodo</span></div>
+        <div class="card kpi"><span class="kpi__label">Por revisar</span><strong class="kpi__value">16</strong><span class="badge badge--warn"><i class="fa-solid fa-triangle-exclamation"></i>Requiere atención</span></div>
+      </div>
+
+      <div class="card table-card">
+        <div class="table-toolbar"><h2>Detalle de consumos</h2><label class="search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="Buscar tarjeta o establecimiento" id="buscar"></label></div>
+        <div class="table-scroll">
+        <table class="table" id="dataTable">
+          <thead><tr><th>N°</th><th>Tarjeta</th><th>Establecimiento</th><th>Fecha</th><th class="num">Valor</th><th>Estado</th></tr></thead>
+          <tbody id="dataBody">
+          <tr><td class="idx">1</td><td class="mono">**** 4821</td><td>Almacén La 14 Popayán</td><td class="mono">2024-03-04</td><td class="num">$ 85.000</td><td><span class="badge badge--ok"><i class="fa-solid fa-circle-check"></i>Identificado</span></td></tr>
+          <tr><td class="idx">2</td><td class="mono">**** 1937</td><td>Droguería Alemana</td><td class="mono">2024-03-04</td><td class="num">$ 120.500</td><td><span class="badge badge--ok"><i class="fa-solid fa-circle-check"></i>Identificado</span></td></tr>
+          <tr><td class="idx">3</td><td class="mono">**** 7710</td><td>Supermercado Comfacauca</td><td class="mono">2024-03-05</td><td class="num">$ 42.900</td><td><span class="badge badge--warn"><i class="fa-solid fa-triangle-exclamation"></i>Revisar</span></td></tr>
+          <tr><td class="idx">4</td><td class="mono">**** 0254</td><td>Estación Terpel Centro</td><td class="mono">2024-03-05</td><td class="num">$ 96.000</td><td><span class="badge badge--ok"><i class="fa-solid fa-circle-check"></i>Identificado</span></td></tr>
+          <tr class="row-err"><td class="idx">5</td><td class="mono">**** 3388</td><td>Comercio sin código</td><td class="mono">2024-03-05</td><td class="num">$ 18.700</td><td><span class="badge badge--err"><i class="fa-solid fa-circle-xmark"></i>Sin establecimiento</span></td></tr>
+          <tr><td class="idx">6</td><td class="mono">**** 6612</td><td>Panadería Belalcázar</td><td class="mono">2024-03-06</td><td class="num">$ 12.300</td><td><span class="badge badge--ok"><i class="fa-solid fa-circle-check"></i>Identificado</span></td></tr>
+          </tbody>
+          <tfoot><tr><td colspan="4">Total de la página</td><td class="num">$ 375.400</td><td></td></tr></tfoot>
+        </table>
+        </div>
+        <div class="pagination"><span>Mostrando 1–6 de 1.248</span><span><button class="btn btn--secondary btn--sm">Anterior</button> <button class="btn btn--secondary btn--sm">Siguiente</button></span></div>
+      </div>
+    </div>
+  </main>
+  <footer class="footer"><span>© Tesorería Comfacauca · Popayán, Cauca</span><span>Módulo de Tarjetas v2.0</span></footer>
+</div>
+</div>
+
+<div class="toasts" id="toastContainer"></div>
+
+<!-- Solo para la maqueta: alterna entre "sin archivo" y "archivo procesado". -->
+<script>
+  const $ = id => document.getElementById(id);
+  const steps = $('steps').children;
+  function toast(msg, type) {
+    const icons = { ok: 'fa-circle-check', info: 'fa-circle-info', warn: 'fa-triangle-exclamation', err: 'fa-circle-xmark' };
+    const t = document.createElement('div');
+    t.className = 'toast toast--' + type;
+    t.innerHTML = '<i class="fa-solid ' + icons[type] + '"></i><span>' + msg + '</span>';
+    $('toastContainer').appendChild(t);
+    setTimeout(() => { t.classList.add('is-leaving'); setTimeout(() => t.remove(), 200); }, 2600);
+  }
+  function vacio() {
+    $('dropZone').hidden = false; $('fileChip').hidden = true; $('resultados').hidden = true;
+    steps[0].className = 'step is-current'; steps[0].querySelector('.step__dot').textContent = '1';
+    steps[1].className = 'step';
+  }
+  function cargado() {
+    $('dropZone').hidden = true; $('fileChip').hidden = false; $('resultados').hidden = false;
+    steps[0].className = 'step is-done'; steps[0].querySelector('.step__dot').innerHTML = '<i class="fa-solid fa-check"></i>';
+    steps[1].className = 'step is-current';
+    toast('Archivo procesado: 1.248 registros.', 'ok');
+  }
+  $('btnLimpiar').onclick = vacio;
+  $('btnQuitar').onclick = vacio;
+  $('dropZone').onclick = cargado;
+  $('btnProcesar').onclick = () => toast('Procesando archivo de consumos…', 'info');
+  $('buscar').oninput = e => {
+    const q = e.target.value.toLowerCase();
+    for (const tr of $('dataBody').rows) tr.hidden = !tr.textContent.toLowerCase().includes(q);
+  };
+</script>
+</body>
+</html>

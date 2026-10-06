@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Procesar consumos | Módulo de Tarjetas</title>
+<link rel="apple-touch-icon" sizes="180x180" href="../imagen/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../imagen/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../imagen/favicon-16x16.png">
+<link rel="manifest" href="../imagen/site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../css/app.css">
+</head>
+<body>
+<div class="app">
+<aside class="sidebar" aria-label="Navegación principal">
+  <a class="sidebar__brand" href="../index.html"><img src="../imagen/Logo.png" alt="Comfacauca"><div><b>Módulo de Tarjetas</b><span>Tesorería Comfacauca</span></div></a>
+  <a class="sidebar__link" href="../index.html"><i class="fa-solid fa-house"></i>Inicio</a>
+  <div class="sidebar__group">Procesar</div>
+  <a class="sidebar__link is-active" aria-current="page" href="../Consumos/procesar_consumos.html"><i class="fa-solid fa-file-lines"></i>Consumos</a>
+  <a class="sidebar__link" href="../Fibatch/procesar_fibatch.html"><i class="fa-solid fa-right-left"></i>FIBATCH</a>
+  <a class="sidebar__link" href="../SaldosPagina/SaldosPagina.html"><i class="fa-solid fa-chart-line"></i>Saldos página</a>
+  <div class="sidebar__group">Validar</div>
+  <a class="sidebar__link" href="../ValidarArchivosPersonalizacion/validarPersonalizacion.html"><i class="fa-solid fa-list-check"></i>Personalización</a>
+  <a class="sidebar__link" href="../ValidarArchivoPago/validarArchivoPago.html"><i class="fa-solid fa-money-check-dollar"></i>Pago subsidio familiar</a>
+  <div class="sidebar__group">Conciliar</div>
+  <a class="sidebar__link" href="../Conciliacion/index.html"><i class="fa-solid fa-scale-balanced"></i>Conciliación de terceros</a>
+  <div class="sidebar__foot">Creado por Wilmar Andrés Gómez</div>
+</aside>
+<div class="main">
+  <header class="topbar"><nav class="breadcrumb"><a href="../index.html">Tarjetas</a> / Procesar / <b>Consumos</b></nav><div class="topbar__user">Tesorería <span class="avatar">WG</span></div></header>
+  <main class="content">
+    <div class="page-head">
+      <div><h1>Procesar archivo de consumos</h1><p>Carga el .txt del banco; se identifica cada establecimiento y se totaliza el archivo.</p></div>
+      <div class="page-head__actions">
+        <button class="btn btn--primary" onclick="processFile()"><i class="fa-solid fa-play"></i>Procesar</button>
+        <button class="btn btn--danger" onclick="clearTable()"><i class="fa-solid fa-eraser"></i>Limpiar</button>
+        <span class="actions-sep" aria-hidden="true"></span>
+        <button class="btn btn--csv" onclick="exportToCSV()"><i class="fa-solid fa-file-csv"></i>Exportar CSV</button>
+        <button class="btn btn--excel" onclick="exportToExcel()"><i class="fa-solid fa-file-excel"></i>Exportar Excel</button>
+      </div>
+    </div>
+
+    <div id="dropZone" class="dropzone" tabindex="0" role="button" aria-label="Cargar archivo">
+      <div class="dropzone__icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+      <p class="drop-title dropzone__title">Arrastra archivos aquí o haz clic para seleccionar</p>
+      <p class="drop-subtitle dropzone__hint">Formatos soportados: .txt</p>
+      <input type="file" id="fileInput" class="file-input" accept=".txt,.csv" hidden>
+    </div>
+
+    <div id="summaryContainer" class="summary-container"></div>
+
+    <div id="unregNotice" class="unreg-notice" hidden></div>
+
+    <div class="card table-card">
+      <div class="table-toolbar dt-toolbar">
+        <h2>Detalle de consumos</h2>
+        <div class="dt-tools">
+          <label class="dt-search">Buscar: <input type="search" id="dtSearch" placeholder="Tarjeta, comercio, fecha…" autocomplete="off"></label>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table id="dataTable" class="table styled-table">
+          <thead>
+            <tr><th data-sort="n">N°</th><th data-sort="card">No. de Tarjeta</th><th data-sort="value" class="col-valor">Valor</th><th data-sort="date">Fecha</th><th data-sort="code">Código Único</th><th data-sort="est">Establecimiento</th><th data-sort="state">Estado</th></tr>
+          </thead>
+          <tbody id="dataBody"></tbody>
+          <tfoot id="dataFoot"></tfoot>
+        </table>
+      </div>
+      <div class="dt-footer">
+        <div class="dt-info" id="dtInfo">Mostrando 0 registros</div>
+        <label class="dt-size">Filas: <select id="dtSize"><option>10</option><option selected>15</option><option>25</option><option>50</option><option>100</option></select></label>
+        <nav class="dt-pager" id="dtPager" aria-label="Paginación"></nav>
+      </div>
+    </div>
+  </main>
+  <footer class="footer"><span>© Tesorería Comfacauca · Popayán, Cauca</span><span>Módulo de Tarjetas v2.0</span></footer>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/xlsx.full.min.js"></script>
+<script src="comercios.js"></script>
+<script src="scripts.js"></script>
+<script>
+        // Lógica Drag & Drop
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.remove('dragover');
+            }, false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                fileInput.files = e.dataTransfer.files;
+                // Disparar animación de carga
+                dropZone.classList.add('file-loaded');
+                setTimeout(() => dropZone.classList.remove('file-loaded'), 1000);
+            }
+        });
+
+        // Click en la zona para abrir selector
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        // Mostrar nombre del archivo seleccionado
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                dropZone.classList.add('file-loaded');
+                const fileName = fileInput.files[0].name;
+                dropZone.querySelector('p').innerHTML = `<i class="fas fa-check-circle"></i> ${fileName}`;
+                setTimeout(() => dropZone.classList.remove('file-loaded'), 1000);
+            }
+        });
+
+        // Funciones de scroll
+        function scrollToBottom() {
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+<script src="../css/dropzone.js"></script>
+<script src="../css/layout.js"></script>
+</body>
+</html>
