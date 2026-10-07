@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vouchers re-expediciones | Módulo de Tarjetas</title>
+<link rel="apple-touch-icon" sizes="180x180" href="../imagen/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../imagen/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../imagen/favicon-16x16.png">
+<link rel="manifest" href="../imagen/site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../css/app.css">
+</head>
+<body>
+<div class="app">
+<aside class="sidebar" aria-label="Navegación principal">
+  <a class="sidebar__brand" href="../index.html"><img src="../imagen/Logo.png" alt="Comfacauca"><div><b>Módulo de Tarjetas</b><span>Tesorería Comfacauca</span></div></a>
+  <a class="sidebar__link" href="../index.html"><i class="fa-solid fa-house"></i>Inicio</a>
+  <div class="sidebar__group">Procesar</div>
+  <a class="sidebar__link" href="../Consumos/procesar_consumos.html"><i class="fa-solid fa-file-lines"></i>Consumos</a>
+  <a class="sidebar__link" href="../Fibatch/procesar_fibatch.html"><i class="fa-solid fa-right-left"></i>FIBATCH</a>
+  <a class="sidebar__link" href="../SaldosPagina/SaldosPagina.html"><i class="fa-solid fa-chart-line"></i>Saldos página</a>
+  <div class="sidebar__group">Validar</div>
+  <a class="sidebar__link" href="../ValidarArchivosPersonalizacion/validarPersonalizacion.html"><i class="fa-solid fa-list-check"></i>Personalización</a>
+  <a class="sidebar__link" href="../ValidarArchivoPago/validarArchivoPago.html"><i class="fa-solid fa-money-check-dollar"></i>Pago subsidio familiar</a>
+  <div class="sidebar__group">Conciliar</div>
+  <a class="sidebar__link" href="../Conciliacion/index.html"><i class="fa-solid fa-scale-balanced"></i>Conciliación de terceros</a>
+  <div class="sidebar__group">Organizar</div>
+  <a class="sidebar__link is-active" aria-current="page" href="../ReexpedicionesVouchers/vouchers.html"><i class="fa-solid fa-images"></i>Re-expediciones</a>
+  <div class="sidebar__foot">Creado por Wilmar Andrés Gómez</div>
+</aside>
+<div class="main">
+  <header class="topbar"><nav class="breadcrumb"><a href="../index.html">Tarjetas</a> / Organizar / <b>Vouchers re-expediciones</b></nav><div class="topbar__user">Tesorería <span class="avatar">WG</span></div></header>
+  <main class="content">
+    <div class="page-head">
+      <div><h1>Organizar vouchers de re-expediciones</h1><p>Carga las imágenes o PDF de los vouchers y el Excel de control; se validan y se genera un PDF con 4 vouchers por hoja.</p></div>
+      <div class="page-head__actions">
+        <button id="btnValidar" class="btn btn--primary" onclick="validarYProcesar()"><i class="fa-solid fa-circle-check"></i>Validar y procesar</button>
+        <button class="btn btn--danger" onclick="limpiarTodo()"><i class="fa-solid fa-eraser"></i>Limpiar</button>
+        <span class="actions-sep" aria-hidden="true"></span>
+        <button id="btnDescargar" class="btn btn--excel" onclick="descargarPDF()" disabled><i class="fa-solid fa-file-pdf"></i>Descargar PDF</button>
+      </div>
+    </div>
+
+    <div class="upload-grid upload-grid--2">
+      <article class="card upload-card">
+        <div class="card-header"><h2>1. Vouchers (imágenes o PDF)</h2></div>
+        <div id="dropZone" class="dropzone" tabindex="0" role="button" aria-label="Cargar vouchers">
+          <div class="dropzone__icon"><i class="fa-solid fa-images"></i></div>
+          <p class="drop-title dropzone__title">Arrastra las imágenes o PDF aquí o haz clic</p>
+          <p class="drop-subtitle dropzone__hint">Nombres: "1. 10100126.jpg", "2. 1061128126.png", …</p>
+          <input type="file" id="fileInput" class="file-input" multiple accept="image/*,.pdf" hidden>
+        </div>
+        <p id="estadoVouchers" class="file-status">Sin cargar</p>
+      </article>
+      <article class="card upload-card">
+        <div class="card-header"><h2>2. Excel de control</h2></div>
+        <div id="dropZoneExcel" class="dropzone" tabindex="0" role="button" aria-label="Cargar Excel">
+          <div class="dropzone__icon"><i class="fa-solid fa-file-excel"></i></div>
+          <p class="drop-title dropzone__title">Arrastra el Excel (.xlsx) aquí o haz clic</p>
+          <p class="drop-subtitle dropzone__hint">Debe contener las columnas DOCUMENTO y OBSERVACIÓN</p>
+          <input type="file" id="fileExcel" class="file-input" accept=".xlsx,.xls" hidden>
+        </div>
+        <p id="estadoExcel" class="file-status">Sin cargar</p>
+      </article>
+    </div>
+
+    <div id="mensajeValidacion" class="alert" hidden></div>
+
+    <section id="secPreview" class="card section-card" hidden>
+      <div class="section-header"><h2><i class="fa-solid fa-eye"></i> Previsualización de hojas</h2></div>
+      <p class="preview-note" id="previewNote"></p>
+      <div id="gridPreview" class="grid-preview"></div>
+    </section>
+  </main>
+  <footer class="footer"><span>© Tesorería Comfacauca · Popayán, Cauca</span><span>Módulo de Tarjetas v2.0</span></footer>
+</div>
+</div>
+<div id="loadingOverlay" class="overlay" hidden>
+  <div class="overlay__box overlay-content"><div class="spinner"></div><p id="loadingText">Cargando archivo, por favor espera…</p></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="vouchers.js"></script>
+<script src="../css/dropzone.js"></script>
+<script src="../css/layout.js"></script>
+</body>
+</html>

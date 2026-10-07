@@ -11,6 +11,7 @@ Aplicación web para el área de Tesorería de **Comfacauca** (Popayán, Cauca) 
 | | `SaldosPagina` | Genera los archivos de saldos por bolsillo: FOSFEC, Subsidio Familiar y verificación (con duplicados, sin enmascarar). |
 | **Validar** | `ValidarArchivosPersonalizacion` | Revisa línea por línea el archivo de personalización antes de enviarlo. |
 | | `ValidarArchivoPago` | Valida totales, duplicados (documento / tarjeta) y la última línea del archivo de pago de subsidio familiar. |
+| **Organizar** | `ReexpedicionesVouchers` | Valida los vouchers (imágenes/PDF) contra el Excel de control y genera un PDF con 4 vouchers por hoja. |
 | **Conciliar** | `Conciliacion` | Compara Contabilidad, Tesorería y (opcional) Consumos para identificar diferencias de saldo de terceros. |
 
 ## Características
@@ -47,7 +48,7 @@ css/
   layout.js                     Botón para ocultar el menú
 imagen/                         Logo, favicon y fondo
 Consumos/  Fibatch/  SaldosPagina/
-ValidarArchivoPago/  ValidarArchivosPersonalizacion/  Conciliacion/
+ValidarArchivoPago/  ValidarArchivosPersonalizacion/  Conciliacion/  ReexpedicionesVouchers/
 ```
 
 ## Registrar un comercio nuevo
