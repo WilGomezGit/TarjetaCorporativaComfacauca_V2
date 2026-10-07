@@ -48,7 +48,6 @@ css/
 imagen/                         Logo, favicon y fondo
 Consumos/  Fibatch/  SaldosPagina/
 ValidarArchivoPago/  ValidarArchivosPersonalizacion/  Conciliacion/
-rediseno-tarjetas/              Maqueta del rediseño (referencia)
 ```
 
 ## Registrar un comercio nuevo
