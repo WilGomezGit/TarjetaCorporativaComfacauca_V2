@@ -28,15 +28,18 @@
     let current = null;
 
     function sync() {
-      const f = input.files && input.files[0];
-      const key = f ? f.name + '|' + f.size + '|' + f.lastModified : null;
+      const list = input.files ? Array.from(input.files) : [];
+      const f = list[0];
+      const key = list.length ? list.map(x => x.name + '|' + x.size + '|' + x.lastModified).join(';') : null;
       if (key === current) return;
       current = key;
       if (f) {
         dz.classList.add('has-file');
         if (icon) icon.className = 'fa-solid fa-file-circle-check';
-        if (title) { title.textContent = f.name; title.title = f.name; }
-        if (hint) hint.textContent = fmtSize(f.size) + ' · haz clic o arrastra otro para reemplazar';
+        const total = list.reduce((a, x) => a + x.size, 0);
+        const name = list.length > 1 ? list.length + ' archivos seleccionados' : f.name;
+        if (title) { title.textContent = name; title.title = name; }
+        if (hint) hint.textContent = fmtSize(total) + ' · haz clic o arrastra ' + (list.length > 1 ? 'otros' : 'otro') + ' para reemplazar';
       } else {
         dz.classList.remove('has-file');
         if (icon) icon.className = orig.icon;
